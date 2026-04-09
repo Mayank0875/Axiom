@@ -1,17 +1,43 @@
 /* Statistics page — Frappe LMS style with charts */
-import { statsData } from "@/data/mockData";
+import { useEffect, useState } from "react";
+import { fetchStatistics } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
 } from "recharts";
 
 const StatisticsPage = () => {
-  const { courses, signups, enrollments, completions, certifications, enrollmentsPerDay, certificationsPerDay, completionData } = statsData;
+  const { auth } = useAuth();
+  const [stats, setStats] = useState({
+    courses: 0,
+    signups: 0,
+    enrollments: 0,
+    completions: 0,
+    certifications: 0,
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!auth?.token) return;
+    fetchStatistics(auth.token)
+      .then(setStats)
+      .finally(() => setLoading(false));
+  }, [auth?.token]);
+
+  const { courses, signups, enrollments, completions, certifications } = stats;
+  const enrollmentsPerDay = [{ date: "Today", count: enrollments }];
+  const certificationsPerDay = [{ date: "Today", count: certifications }];
+  const completionData = [
+    { label: "In Progress", value: Math.max(enrollments - completions, 0), color: "hsl(200, 80%, 55%)" },
+    { label: "Completed", value: completions, color: "hsl(45, 90%, 55%)" },
+  ];
   const totalCompletion = completionData.reduce((a, b) => a + b.value, 0);
 
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">Statistics</h1>
+      {loading && <p className="text-sm text-muted-foreground mb-4">Loading statistics...</p>}
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">

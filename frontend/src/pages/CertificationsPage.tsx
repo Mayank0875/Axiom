@@ -1,16 +1,35 @@
 /* Certifications page — Frappe LMS style */
 import { Award } from "lucide-react";
-import { certifiedMembers } from "@/data/mockData";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { fetchCertifications } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 
 const CertificationsPage = () => {
+  const { auth } = useAuth();
+  const [certifiedMembers, setCertifiedMembers] = useState<
+    Array<{
+      id: number;
+      name: string;
+      category: string;
+      open_to_work: boolean;
+      hiring: boolean;
+    }>
+  >([]);
   const [search, setSearch] = useState("");
   const [openToWork, setOpenToWork] = useState(false);
   const [hiring, setHiring] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!auth?.token) return;
+    fetchCertifications(auth.token)
+      .then(setCertifiedMembers)
+      .finally(() => setLoading(false));
+  }, [auth?.token]);
 
   const filtered = certifiedMembers.filter((m) => {
     if (search && !m.name.toLowerCase().includes(search.toLowerCase())) return false;
-    if (openToWork && !m.openToWork) return false;
+    if (openToWork && !m.open_to_work) return false;
     if (hiring && !m.hiring) return false;
     return true;
   });
@@ -45,7 +64,9 @@ const CertificationsPage = () => {
         </label>
       </div>
 
-      {filtered.length === 0 ? (
+      {loading ? (
+        <p className="text-sm text-muted-foreground">Loading certified members...</p>
+      ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
             <Award className="w-7 h-7 text-muted-foreground" />
@@ -54,17 +75,19 @@ const CertificationsPage = () => {
           <p className="text-sm text-muted-foreground mt-1">There are no certified members currently. Keep an eye out, fresh learning experiences are on the way!</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {filtered.map((m) => (
-            <div key={m.id} className="border rounded-lg p-4 bg-card flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-sm font-bold">
-                {m.name.split(" ").map((n) => n[0]).join("")}
+            <div key={m.id} className="border rounded-lg overflow-hidden bg-card hover:shadow-md transition-shadow">
+              <div className="h-40 bg-muted flex items-center justify-center">
+                <div className="w-14 h-14 rounded-full bg-card border flex items-center justify-center text-base font-bold text-muted-foreground">
+                  {m.name.split(" ").map((n) => n[0]).join("")}
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-medium">{m.name}</p>
+              <div className="p-4 pt-3">
+                <p className="text-sm font-semibold">{m.name}</p>
                 <p className="text-xs text-muted-foreground">{m.category}</p>
-                <div className="flex gap-2 mt-1">
-                  {m.openToWork && <span className="text-[10px] bg-green-50 text-green-600 px-1.5 py-0.5 rounded">Open to Work</span>}
+                <div className="flex gap-2 mt-2">
+                  {m.open_to_work && <span className="text-[10px] bg-green-50 text-green-600 px-1.5 py-0.5 rounded">Open to Work</span>}
                   {m.hiring && <span className="text-[10px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded">Hiring</span>}
                 </div>
               </div>

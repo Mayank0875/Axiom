@@ -1,10 +1,12 @@
 /* Sidebar — Frappe LMS style */
+import { useMemo } from "react";
 import { NavLink } from "react-router-dom";
 import {
   Home, Search, Bell, BookOpen, Layers, Users2,
   Award, Briefcase, TrendingUp, CircleHelp,
   FileEdit, Code2, ChevronDown, User, GraduationCap,
 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 const mainNav = [
   { to: "/", icon: Home, label: "Home" },
@@ -27,10 +29,7 @@ const assessmentNav = [
   { to: "/exercises", icon: Code2, label: "Programming Exercises" },
 ];
 
-const bottomNav = [
-  { to: "/faculty", icon: GraduationCap, label: "Faculty Panel" },
-  { to: "/profile", icon: User, label: "Profile" },
-];
+const bottomNav = [{ to: "/profile", icon: User, label: "Profile" }];
 
 function SidebarLink({ to, icon: Icon, label }: { to: string; icon: any; label: string }) {
   return (
@@ -51,8 +50,16 @@ function SidebarLink({ to, icon: Icon, label }: { to: string; icon: any; label: 
   );
 }
 
-const Sidebar = () => (
-  <aside className="hidden md:flex flex-col w-56 border-r bg-card min-h-screen">
+const Sidebar = () => {
+  const { auth } = useAuth();
+  const roles = auth?.roles ?? [];
+  const showFacultyPanel = useMemo(
+    () => roles.includes("faculty") || roles.includes("admin"),
+    [roles]
+  );
+
+  return (
+    <aside className="hidden md:flex flex-col w-56 border-r bg-card h-screen sticky top-0">
     {/* Brand */}
     <div className="p-4 border-b flex items-center justify-between">
       <div className="flex items-center gap-2">
@@ -86,6 +93,10 @@ const Sidebar = () => (
 
       <div className="border-t my-3" />
 
+      {showFacultyPanel && (
+        <SidebarLink to="/faculty" icon={GraduationCap} label="Faculty Panel" />
+      )}
+
       {bottomNav.map((item) => (
         <SidebarLink key={item.to} {...item} />
       ))}
@@ -104,7 +115,8 @@ const Sidebar = () => (
         </button>
       </div>
     </div>
-  </aside>
-);
+    </aside>
+  );
+};
 
 export default Sidebar;

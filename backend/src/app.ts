@@ -1,38 +1,49 @@
-import express from "express";
-import { Routes } from "./utils/route.Interface";
-import { connect } from "mongoose";
+import express, { NextFunction, Request, Response } from "express";
+import cors from "cors";
+import helmet from "helmet";
+import morgan from "morgan";
+import apiRouter from "./routes";
+import { HttpError } from "./utils/httpError";
 
 class App {
-  public app: express.Application;
-  public port: string | number;
+  public readonly app: express.Application;
 
-  constructor(routes: Routes[]) {
+  constructor() {
     this.app = express();
-    this.port = 8080;
-    this.initializeRoutes(routes);
-    this.connectDatabase();
+    this.initializeMiddlewares();
+    this.initializeRoutes();
+    this.initializeErrorHandling();
   }
 
-  public startServer() {
-    this.app.listen(this.port, () => {
-      console.log(`Server listening on http://localhost:${this.port}`);
+  private initializeMiddlewares() {
+    this.app.use(helmet());
+    this.app.use(cors());
+    this.app.use(express.json());
+    this.app.use(morgan("dev"));
+  }
+
+  private initializeRoutes() {
+    this.app.get("/health", (_req, res) => {
+      res.status(200).json({ message: "Axiom LMS backend is running" });
     });
+    this.app.use("/api/v1", apiRouter);
   }
 
-  private initializeRoutes(routes: Routes[]) {
-    routes.forEach((route) => {
-      this.app.use("/", route.router);
-    });
-  }
-
-  private connectDatabase() {
-    connect("mongodb+srv://hello") // add your connection string here
-      .then(() => {
-        console.log("Database connected...");
-      })
-      .catch((err) => {
+  private initializeErrorHandling() {
+    this.app.use(
+      (
+        err: unknown,
+        _req: Request,
+        res: Response,
+        _next: NextFunction
+      ) => {
+        if (err instanceof HttpError) {
+          return res.status(err.statusCode).json({ message: err.message });
+        }
         console.error(err);
-      });
+        return res.status(500).json({ message: "Internal server error" });
+      }
+    );
   }
 }
 

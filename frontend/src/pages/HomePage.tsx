@@ -1,9 +1,17 @@
 /* Home page — Frappe LMS style */
+import { useEffect, useState } from "react";
 import { BookOpen, Users, Star } from "lucide-react";
-import { courses } from "@/data/mockData";
+import { fetchCourses, ApiCourse } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 
 const HomePage = () => {
-  const myCourses = courses.filter((c) => c.instructor === "Mayank Gupta");
+  const { auth } = useAuth();
+  const [myCourses, setMyCourses] = useState<ApiCourse[]>([]);
+
+  useEffect(() => {
+    if (!auth?.token) return;
+    fetchCourses(auth.token).then((data) => setMyCourses(data.slice(0, 6)));
+  }, [auth?.token]);
 
   return (
     <div>
@@ -26,7 +34,7 @@ const HomePage = () => {
   );
 };
 
-function CourseCard({ course }: { course: typeof courses[0] }) {
+function CourseCard({ course }: { course: ApiCourse }) {
   return (
     <div className="border rounded-lg overflow-hidden bg-card hover:shadow-md transition-shadow">
       {/* Placeholder image */}
@@ -40,16 +48,14 @@ function CourseCard({ course }: { course: typeof courses[0] }) {
       {/* Stats row */}
       <div className="flex items-center gap-4 px-4 pt-3 text-sm text-muted-foreground">
         <span className="flex items-center gap-1">
-          <BookOpen className="w-3.5 h-3.5" /> {course.lessonCount}
+          <BookOpen className="w-3.5 h-3.5" /> --
         </span>
         <span className="flex items-center gap-1">
-          <Users className="w-3.5 h-3.5" /> {course.enrolledCount}
+          <Users className="w-3.5 h-3.5" /> --
         </span>
-        {course.rating > 0 && (
-          <span className="flex items-center gap-1">
-            <Star className="w-3.5 h-3.5" /> {course.rating.toFixed(1)}
-          </span>
-        )}
+        <span className="flex items-center gap-1">
+          <Star className="w-3.5 h-3.5" /> --
+        </span>
       </div>
 
       {/* Info */}
@@ -58,9 +64,9 @@ function CourseCard({ course }: { course: typeof courses[0] }) {
         <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{course.description}</p>
         <div className="flex items-center gap-2 mt-3">
           <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-[10px] font-bold">
-            {course.instructor.split(" ").map((n) => n[0]).join("")}
+            AX
           </div>
-          <span className="text-xs text-muted-foreground">{course.instructor}</span>
+          <span className="text-xs text-muted-foreground">Axiom Faculty</span>
         </div>
       </div>
     </div>

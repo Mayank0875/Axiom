@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Menu, X, BookOpen } from "lucide-react";
 import { NavLink, Link } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 
 const navLinks = [
   { to: "/", label: "Home" },
@@ -14,6 +15,13 @@ const navLinks = [
 
 const TopBar = () => {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const { auth, logout } = useAuth();
+  const initials = auth?.user.full_name
+    ?.split(" ")
+    .map((name) => name[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   return (
     <header className="sticky top-0 z-40 bg-card border-b px-4 md:px-6 h-14 flex items-center justify-between md:justify-end">
@@ -28,9 +36,16 @@ const TopBar = () => {
         <span className="font-bold text-sm">Learning</span>
       </Link>
 
-      {/* Avatar */}
-      <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
-        MG
+      <div className="flex items-center gap-2">
+        <button
+          onClick={logout}
+          className="text-xs border rounded-md px-2 py-1 text-muted-foreground hover:bg-muted"
+        >
+          Logout
+        </button>
+        <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
+          {initials || "U"}
+        </div>
       </div>
 
       {/* Mobile nav */}

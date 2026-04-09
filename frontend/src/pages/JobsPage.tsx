@@ -1,10 +1,30 @@
 /* Jobs page — Frappe LMS style */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Briefcase, Plus, Search } from "lucide-react";
-import { jobOpenings } from "@/data/mockData";
+import { fetchJobs } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 
 const JobsPage = () => {
+  const { auth } = useAuth();
+  const [jobOpenings, setJobOpenings] = useState<
+    Array<{
+      id: number;
+      title: string;
+      company: string;
+      country: string;
+      type: string;
+      work_mode: string;
+    }>
+  >([]);
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!auth?.token) return;
+    fetchJobs(auth.token)
+      .then(setJobOpenings)
+      .finally(() => setLoading(false));
+  }, [auth?.token]);
 
   const filtered = jobOpenings.filter((j) =>
     !search || j.title.toLowerCase().includes(search.toLowerCase())
@@ -41,7 +61,9 @@ const JobsPage = () => {
         </select>
       </div>
 
-      {filtered.length === 0 ? (
+      {loading ? (
+        <p className="text-sm text-muted-foreground">Loading jobs...</p>
+      ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
             <Briefcase className="w-7 h-7 text-muted-foreground" />
@@ -50,16 +72,19 @@ const JobsPage = () => {
           <p className="text-sm text-muted-foreground mt-1">There are no job openings currently. Keep an eye out, fresh learning experiences are on the way!</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {filtered.map((job) => (
-            <div key={job.id} className="border rounded-lg p-4 bg-card flex items-center justify-between hover:shadow-sm transition-shadow">
-              <div>
+            <div key={job.id} className="border rounded-lg overflow-hidden bg-card hover:shadow-md transition-shadow">
+              <div className="h-40 bg-muted flex items-center justify-center">
+                <Briefcase className="w-10 h-10 text-muted-foreground opacity-30" />
+              </div>
+              <div className="p-4 pt-3">
                 <h3 className="text-sm font-semibold">{job.title}</h3>
                 <p className="text-xs text-muted-foreground mt-0.5">{job.company} · {job.country}</p>
-              </div>
-              <div className="flex gap-2">
-                <span className="text-xs px-2 py-1 rounded bg-muted text-muted-foreground">{job.type}</span>
-                <span className="text-xs px-2 py-1 rounded bg-muted text-muted-foreground">{job.workMode}</span>
+                <div className="flex gap-2 mt-3">
+                  <span className="text-xs px-2 py-1 rounded bg-muted text-muted-foreground">{job.type}</span>
+                  <span className="text-xs px-2 py-1 rounded bg-muted text-muted-foreground">{job.work_mode}</span>
+                </div>
               </div>
             </div>
           ))}

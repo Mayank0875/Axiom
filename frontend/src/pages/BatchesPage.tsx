@@ -1,16 +1,39 @@
 /* Batches page — Frappe LMS style */
 import { useState } from "react";
+import { useEffect } from "react";
 import { Plus, Users2 } from "lucide-react";
-import { batches } from "@/data/mockData";
+import { fetchBatches } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 
 const tabs = ["All", "Upcoming", "Archived", "Unpublished"] as const;
 
 const BatchesPage = () => {
+  const { auth } = useAuth();
+  const [batches, setBatches] = useState<
+    Array<{
+      id: number;
+      title: string;
+      status: string;
+      start_date: string;
+      end_date: string;
+      course_count: number;
+      student_count: number;
+      category: string;
+    }>
+  >([]);
   const [activeTab, setActiveTab] = useState<string>("All");
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!auth?.token) return;
+    fetchBatches(auth.token)
+      .then(setBatches)
+      .finally(() => setLoading(false));
+  }, [auth?.token]);
 
   const filtered = batches.filter((b) => {
-    if (activeTab !== "All" && b.status !== activeTab) return false;
+    if (activeTab !== "All" && b.status.toLowerCase() !== activeTab.toLowerCase()) return false;
     if (search && !b.title.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
@@ -52,7 +75,9 @@ const BatchesPage = () => {
         </div>
       </div>
 
-      {filtered.length === 0 ? (
+      {loading ? (
+        <p className="text-sm text-muted-foreground">Loading batches...</p>
+      ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
             <Users2 className="w-7 h-7 text-muted-foreground" />
@@ -63,15 +88,20 @@ const BatchesPage = () => {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {filtered.map((b) => (
-            <div key={b.id} className="border rounded-lg p-5 bg-card hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-semibold text-sm">{b.title}</h3>
-                <span className={`text-xs px-2 py-0.5 rounded-full ${b.status === "Upcoming" ? "bg-blue-50 text-blue-600" : "bg-muted text-muted-foreground"}`}>
-                  {b.status}
-                </span>
+            <div key={b.id} className="border rounded-lg overflow-hidden bg-card hover:shadow-md transition-shadow">
+              <div className="h-40 bg-muted flex items-center justify-center">
+                <Users2 className="w-10 h-10 text-muted-foreground opacity-30" />
               </div>
-              <p className="text-xs text-muted-foreground">{b.startDate} — {b.endDate}</p>
-              <p className="text-xs text-muted-foreground mt-1">{b.courseCount} courses · {b.studentCount} students</p>
+              <div className="p-4 pt-3">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-semibold text-sm">{b.title}</h3>
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${b.status === "Upcoming" ? "bg-blue-50 text-blue-600" : "bg-muted text-muted-foreground"}`}>
+                    {b.status}
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground">{b.start_date} — {b.end_date}</p>
+                <p className="text-xs text-muted-foreground mt-1">{b.course_count} courses · {b.student_count} students</p>
+              </div>
             </div>
           ))}
         </div>

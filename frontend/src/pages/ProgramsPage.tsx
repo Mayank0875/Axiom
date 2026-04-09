@@ -1,8 +1,23 @@
 /* Programs page — Frappe LMS style */
+import { useEffect, useState } from "react";
 import { Plus, Layers } from "lucide-react";
-import { programs } from "@/data/mockData";
+import { fetchPrograms } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 
 const ProgramsPage = () => {
+  const { auth } = useAuth();
+  const [programs, setPrograms] = useState<
+    Array<{ id: number; title: string; description: string; course_count: number }>
+  >([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!auth?.token) return;
+    fetchPrograms(auth.token)
+      .then(setPrograms)
+      .finally(() => setLoading(false));
+  }, [auth?.token]);
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -12,18 +27,22 @@ const ProgramsPage = () => {
         </button>
       </div>
 
-      {programs.length === 0 ? (
+      {loading ? (
+        <p className="text-sm text-muted-foreground">Loading programs...</p>
+      ) : programs.length === 0 ? (
         <EmptyState />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {programs.map((p) => (
-            <div key={p.id} className="border rounded-lg p-5 bg-card hover:shadow-md transition-shadow">
-              <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center mb-3">
-                <Layers className="w-5 h-5 text-muted-foreground" />
+            <div key={p.id} className="border rounded-lg overflow-hidden bg-card hover:shadow-md transition-shadow">
+              <div className="h-40 bg-muted flex items-center justify-center">
+                <Layers className="w-10 h-10 text-muted-foreground opacity-30" />
               </div>
-              <h3 className="font-semibold text-sm">{p.title}</h3>
-              <p className="text-xs text-muted-foreground mt-1">{p.description}</p>
-              <p className="text-xs text-muted-foreground mt-3">{p.courseCount} courses</p>
+              <div className="p-4 pt-3">
+                <h3 className="font-semibold text-sm">{p.title}</h3>
+                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{p.description}</p>
+                <p className="text-xs text-muted-foreground mt-3">{p.course_count} courses</p>
+              </div>
             </div>
           ))}
         </div>

@@ -1,9 +1,11 @@
 /* Profile page — user profile with details */
-import { userProfile } from "@/data/mockData";
 import { User, Mail, BookOpen, Award, TrendingUp } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 const ProfilePage = () => {
-  const { name, email } = userProfile;
+  const { auth } = useAuth();
+  const name = auth?.user.full_name ?? "User";
+  const email = auth?.user.email ?? "-";
   const initials = name.split(" ").map((n) => n[0]).join("");
 
   return (
