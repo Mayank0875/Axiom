@@ -103,7 +103,7 @@ const NotificationDetailPage = () => {
   return (
     <div className="max-w-3xl mx-auto">
       <Link
-        to="/notifications"
+        to="/home/notifications"
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />

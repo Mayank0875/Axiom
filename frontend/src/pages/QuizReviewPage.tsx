@@ -39,7 +39,7 @@ const QuizReviewPage = () => {
       <div className="flex items-start justify-between gap-4 mb-6">
         <div>
           <Link
-            to="/quizzes"
+            to="/home/quizzes"
             className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-2 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />

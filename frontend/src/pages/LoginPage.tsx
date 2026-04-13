@@ -11,7 +11,7 @@ const LoginPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (isAuthenticated) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/home" replace />;
   }
 
   const handleSubmit = async (event: FormEvent) => {
@@ -20,7 +20,7 @@ const LoginPage = () => {
     setIsSubmitting(true);
     try {
       await login(email, password);
-      navigate("/", { replace: true });
+      navigate("/home", { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
     } finally {

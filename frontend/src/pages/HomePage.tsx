@@ -15,7 +15,7 @@ const HomePage = () => {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold">Hey, Mayank Gupta 👋</h1>
+      <h1 className="text-2xl font-bold">Hey, {auth?.user?.full_name ?? "there"} 👋</h1>
       <p className="text-muted-foreground mt-1">Manage your courses and batches at a glance</p>
 
       {/* Courses Created */}

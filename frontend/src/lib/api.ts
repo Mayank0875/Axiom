@@ -355,3 +355,92 @@ export const fetchStatistics = async (token: string) =>
     certifications: number;
   }>("/catalog/statistics", {}, token);
 
+
+// ── Profile ──────────────────────────────────────────────────────────────────
+
+export type ApiProfile = {
+  id: number;
+  full_name: string;
+  email: string;
+  phone: string | null;
+  is_active: boolean;
+  is_verified: boolean;
+  created_at: string;
+  last_login_at: string | null;
+  university_id: number;
+  university_name: string;
+  university_website: string | null;
+  roles: string[];
+  // student profile
+  roll_number: string | null;
+  study_year: number | null;
+  department: string | null;
+  cgpa: string | null;
+  // faculty profile
+  designation: string | null;
+  specialization: string | null;
+  experience_years: number | null;
+  // program & batch
+  program_id: number | null;
+  program_title: string | null;
+  program_description: string | null;
+  batch_id: number | null;
+  batch_title: string | null;
+  batch_status: string | null;
+  batch_start_date: string | null;
+  batch_end_date: string | null;
+};
+
+export const fetchMyProfile = async (token: string) =>
+  request<ApiProfile>("/users/me", {}, token);
+
+export const updateMyProfile = async (
+  input: {
+    fullName?: string;
+    email?: string;
+    phone?: string;
+    universityId?: number;
+    rollNumber?: string;
+    department?: string;
+    year?: number;
+    cgpa?: number;
+  },
+  token: string
+) =>
+  request<ApiProfile>(
+    "/users/me",
+    { method: "PATCH", body: JSON.stringify(input) },
+    token
+  );
+
+// ── Quiz attempt status ───────────────────────────────────────────────────────
+
+export type ApiQuizAttempt = {
+  id: number;
+  quiz_id: number;
+  student_id: number;
+  score: number;
+  attempt_number: number;
+  status: string;
+  submitted_at: string;
+};
+
+export const fetchMyQuizAttempt = async (quizId: number, token: string) =>
+  request<ApiQuizAttempt | null>(`/quizzes/${quizId}/my-attempt`, {}, token);
+
+// ── Admin/Faculty — all notifications ────────────────────────────────────────
+
+export type ApiAdminNotification = {
+  id: number;
+  title: string;
+  message: string;
+  created_at: string;
+  read_at: string | null;
+  recipient_id: number;
+  recipient_name: string;
+  recipient_email: string;
+  recipient_roles: string[];
+};
+
+export const fetchAllNotifications = async (token: string) =>
+  request<ApiAdminNotification[]>("/notifications/all", {}, token);
