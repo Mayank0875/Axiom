@@ -41,7 +41,7 @@ To create a **single source of truth** for NST students and simplify access to i
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Getting Started...
 
 ```bash
 git clone https://github.com/Mayank0875/axiom.git
